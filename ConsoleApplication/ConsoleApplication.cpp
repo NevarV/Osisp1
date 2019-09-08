@@ -6,7 +6,8 @@ int WINDOW_WIDTH = 500;
 int WINDOW_HIGH = 400;
 
 HBITMAP SpriteFront;
-HBITMAP SpriteBack;
+HANDLE hBitmap;
+BITMAP Bitmap;
 
 wchar_t* inttostr(int num) {
 	wchar_t* result = new wchar_t[10];
@@ -16,10 +17,10 @@ wchar_t* inttostr(int num) {
 }
 HWND hwndG;
 
-class Spritese {
+class Sprite {
 public:
-	Spritese(int centerX, int centerY) {
-		left = centerX - 50;
+	Sprite(int centerX, int centerY) {
+		left = centerX - 25;
 		top = centerY - 25;
 	}
 	void upSpeedX() {
@@ -64,14 +65,20 @@ public:
 	int getBottom() {
 		return top + high;
 	}
+	int getWidth() {
+		return width;
+	}
+	int getHigh() {
+		return high;
+	}
 private:
-	int left, top, width = 100, high = 50;
+	int left, top, width = 50, high = 50;
 	int speedX = 0, speedY = 0;
 };
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-Spritese sprite = Spritese(WINDOW_WIDTH / 2, WINDOW_HIGH / 2);
+Sprite sprite = Sprite(WINDOW_WIDTH / 2, WINDOW_HIGH / 2);
 
 static int tic = 0;
 
@@ -118,7 +125,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	w.cbClsExtra = 0;
 	w.cbWndExtra = 0;
 
-	SpriteFront = (HBITMAP)LoadImage((HINSTANCE)GetModuleHandle(NULL), L"D:\\Учёба\\3-й Курс\\5-ый сем\\ОСиСП\\ConsoleApplication\\спрайт\\Sprite.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+	hBitmap = LoadImage(NULL, L"spr1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	if (!hBitmap) {
+		MessageBox(NULL, L"File not found!", L"Error", MB_OK);
+		return 0;
+	}
 	//Если не удалось зарегистрировать класс окна - выходим
 	if (!RegisterClass(&w))
 		return 0;
@@ -154,25 +165,32 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 //Функция окна
 LRESULT CALLBACK WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
 {
-	HDC hdc; //создаём контекст устройства
+	HDC hdc, hCompatibleDC; //создаём контекст устройства
 	PAINTSTRUCT ps; //создаём экземпляр структуры графического вывода
-	LOGFONT lf;
-	HFONT hFont;
 	RECT r;
 	HBRUSH hBrush;
 	HPEN hPen;
+	HANDLE hOldBitmap;
 	//Цикл обработки сообщений
 	switch (messg)
 	{
 		//сообщение рисования
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
+
+		GetObject(hBitmap, sizeof(BITMAP), &Bitmap);
+		hCompatibleDC = CreateCompatibleDC(hdc);
+		hOldBitmap = SelectObject(hCompatibleDC, hBitmap);
+		GetClientRect(hWnd, &r);
+		StretchBlt(hdc, sprite.getLeft(), sprite.getTop(), sprite.getWidth(), sprite.getHigh(), hCompatibleDC, 0, 0, Bitmap.bmWidth,
+			Bitmap.bmHeight, SRCCOPY);
+		SelectObject(hCompatibleDC, hOldBitmap);
 		//рисуем зелёный эллипс
-		hBrush = CreateSolidBrush(RGB(10, 200, 100));
+	/*	hBrush = CreateSolidBrush(RGB(10, 200, 100));
 		SelectObject(hdc, hBrush);
 		hPen = CreatePen(PS_NULL, 2, RGB(0, 0, 255));
 		SelectObject(hdc, hPen);
-		Ellipse(hdc, sprite.getLeft(), sprite.getTop(), sprite.getRight(), sprite.getBottom());
+		Ellipse(hdc, sprite.getLeft(), sprite.getTop(), sprite.getRight(), sprite.getBottom());/**/
 
 		ValidateRect(hWnd, NULL);
 		EndPaint(hWnd, &ps);
@@ -213,3 +231,4 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
+
