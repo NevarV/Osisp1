@@ -2,6 +2,11 @@
 #include<string.h>
 #include <string> 
 
+#define VK_D 68
+#define VK_A 65
+#define VK_W 87
+#define VK_S 83
+
 int WINDOW_WIDTH = 500;
 int WINDOW_HIGH = 400;
 
@@ -183,16 +188,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
-		case 68:
+		case VK_D: // right
 			sprite.upSpeedX();
 			break;
-		case 65:
+		case VK_A: // left
 			sprite.downSpeedX();
 			break;
-		case 87:
+		case VK_W: // up
 			sprite.downSpeedY();
 			break;
-		case 83:
+		case VK_S: // down
 			sprite.upSpeedY();
 			break;
 		default:
